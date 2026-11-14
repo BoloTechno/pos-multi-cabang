@@ -6,7 +6,7 @@ from threading import Barrier
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db import IntegrityError, close_old_connections, transaction
+from django.db import IntegrityError, close_old_connections, connections, transaction
 from django.test import Client, TestCase, TransactionTestCase, override_settings, skipUnlessDBFeature
 from django.urls import reverse
 from django.utils import timezone
@@ -301,7 +301,7 @@ class ConcurrencyTests(POSFixture, TransactionTestCase):
             except ValidationError:
                 return "insufficient"
             finally:
-                close_old_connections()
+                connections.close_all()
 
         with ThreadPoolExecutor(max_workers=2) as executor:
             results = list(executor.map(lambda _: checkout(), range(2)))
@@ -324,7 +324,7 @@ class ConcurrencyTests(POSFixture, TransactionTestCase):
             except ValidationError:
                 return "already_received"
             finally:
-                close_old_connections()
+                connections.close_all()
 
         with ThreadPoolExecutor(max_workers=2) as executor:
             results = list(executor.map(lambda _: receive(), range(2)))

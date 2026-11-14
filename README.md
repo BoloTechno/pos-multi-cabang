@@ -88,7 +88,7 @@ python manage.py test -v 2
 python manage.py collectstatic --noinput
 ```
 
-To exercise real concurrency tests, export a PostgreSQL `DATABASE_URL` before running tests; the database user needs permission to create a test database. SQLite skips the PostgreSQL row-locking tests. GitHub Actions runs both database configurations, migration drift checks, static collection and the production settings check. It tests concurrent checkout against limited stock and simultaneous receipts of the same transfer.
+To exercise real concurrency tests, export a PostgreSQL `DATABASE_URL` before running tests; the database user needs permission to create a test database. SQLite skips the PostgreSQL row-locking tests. GitHub Actions runs both database configurations, migration drift checks, static collection, the production settings check and a Docker image build. It tests concurrent checkout against limited stock and simultaneous receipts of the same transfer.
 
 ## Transaction design and review scope
 
