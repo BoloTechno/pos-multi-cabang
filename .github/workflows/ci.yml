@@ -1,0 +1,46 @@
+name: POS checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database: [sqlite, postgres]
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: pos
+          POSTGRES_USER: pos
+          POSTGRES_PASSWORD: ci-only-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U pos -d pos"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      DEBUG: "true"
+      DATABASE_URL: ${{ matrix.database == 'postgres' && 'postgresql://pos:ci-only-password@localhost:5432/pos' || 'sqlite:///db.sqlite3' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py collectstatic --noinput
+      - run: python manage.py test -v 2
+      - name: Production configuration check
+        env:
+          DEBUG: "false"
+          DATABASE_URL: postgresql://pos:ci-only-password@localhost:5432/pos
+          SECRET_KEY: ci-deployment-check-only-very-long-key-not-used-by-any-running-app-123456789
+          ALLOWED_HOSTS: pos.example.com
+          CSRF_TRUSTED_ORIGINS: https://pos.example.com
+        run: python manage.py check --deploy --fail-level WARNING
+      - name: Build deployment image
+        if: matrix.database == 'sqlite'
+        run: docker build --tag bolo-pos:ci .

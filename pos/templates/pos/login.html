@@ -1,0 +1,3 @@
+{% load static %}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sign in · Bolo POS</title><link rel="stylesheet" href="{% static 'pos/app.css' %}"></head>
+<body class="login-body"><main class="login-card"><div class="brand"><span class="brand-icon">B</span> bolo<span class="brand-sub">POS</span></div><p class="eyebrow">YOUR BUSINESS, CONNECTED</p><h1>Welcome back.</h1><p class="muted">Sign in to your operations workspace.</p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<input type="hidden" name="next" value="{{ next }}"><button class="button wide">Sign in →</button></form><p class="small muted">Need access? Contact your head-office administrator.</p></main></body></html>
